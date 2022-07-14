@@ -10,7 +10,10 @@ import SwiftUI
 struct ContentView: View {
     @State private var showingScore = false
     @State private var scoreTitle = ""
-
+    @State private var score = 0
+    @State private var incorrectFlag = 0
+    @State private var tapsLeft = 8
+    @State private var gameOver = false
     @State private var countries = ["Estonia", "France", "Germany", "Ireland", "Italy", "Nigeria", "Poland", "Russia", "Spain", "UK", "US"].shuffled()
     @State private var correctAnswer = Int.random(in: 0...2)
 
@@ -55,9 +58,12 @@ struct ContentView: View {
                 Spacer()
                 Spacer()
 
-                Text("Score: ???")
+                Text("Score: \(score)")
                     .foregroundColor(.white)
                     .font(.title.bold())
+                Text("Taps left: \(tapsLeft)")
+                    .foregroundColor(.white)
+                    .font(.subheadline.bold())
                 Spacer()
             }
             .padding()
@@ -65,22 +71,44 @@ struct ContentView: View {
         .alert(scoreTitle, isPresented: $showingScore) {
             Button("Continue", action: askQuestion)
         } message: {
-            Text("Your score is ???")
+            scoreTitle == "Correct" ?
+            Text("Your score is \(score)") :
+            Text("Wrong! That’s the flag of \(countries[incorrectFlag])")
+        }
+        .alert("Game Over", isPresented: $gameOver) {
+            Button("New Game", action: newGame)
+        } message: {
+            Text("You final score was \(score)")
         }
     }
 
     func flagTapped(_ number: Int) {
+
         if number == correctAnswer {
             scoreTitle = "Correct"
+            score += 1
         } else {
             scoreTitle = "Wrong"
+            incorrectFlag = number
         }
         showingScore = true
+        
+        tapsLeft -= 1
+        if tapsLeft <= 0 {
+            gameOver = true
+        }
     }
 
     func askQuestion() {
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
+    }
+
+    func newGame() {
+        countries.shuffle()
+        correctAnswer = Int.random(in: 0...2)
+        score = 0
+        tapsLeft = 8
     }
 }
 
